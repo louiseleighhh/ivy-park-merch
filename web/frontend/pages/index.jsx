@@ -1,86 +1,86 @@
+import { React, useState, useCallback } from "react";
 import {
-  Card,
   Page,
   Layout,
-  TextContainer,
-  Image,
+  Card,
+  Button,
+  Form,
+  FormLayout,
+  TextField,
   Stack,
-  Link,
-  Heading,
 } from "@shopify/polaris";
-import { TitleBar } from "@shopify/app-bridge-react";
+import { ResourcePicker } from "@shopify/app-bridge-react";
+import axios from "axios";
 
-import { trophyImage } from "../assets";
+const axiosGetData = () => {
+  axios({
+    url: '/admin/api/2022-10/products.json',
+    method: "GET",
+    headers: {
+      'X-Shopify-Access-Token': `${process.env.TOKEN}`,
+      'Content-Type': 'application/json'
+    },
+  })
+    .then((res) => {
+      console.log(res);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+};
 
-import { ProductsCard } from "../components";
 
-export default function HomePage() {
+const index = () => {
+  const [value, setValue] = useState("Name");
+  const [state, setState] = useState(false);
+
+  const handleChange = useCallback((newValue) => setValue(newValue), []);
+
+  function handleSubmit(e) {
+    setState(true);
+    e.preventDefault();
+    console.log(value);
+    axiosGetData();
+  }
+
+  function handleCancel() {
+    setState(false);
+  }
+
+  function handleSelection(resources) {
+    setState(false);
+    resources.selection.map((name) => (name.handle = value));
+    console.log(resources.selection);
+  }
+
   return (
-    <Page narrowWidth>
-      <TitleBar title="App name" primaryAction={null} />
+    <Page title="Ivy Park Merch">
       <Layout>
         <Layout.Section>
-          <Card sectioned>
-            <Stack
-              wrap={false}
-              spacing="extraTight"
-              distribution="trailing"
-              alignment="center"
-            >
-              <Stack.Item fill>
-                <TextContainer spacing="loose">
-                  <Heading>Nice work on building a Shopify app 🎉</Heading>
-                  <p>
-                    Your app is ready to explore! It contains everything you
-                    need to get started including the{" "}
-                    <Link url="https://polaris.shopify.com/" external>
-                      Polaris design system
-                    </Link>
-                    ,{" "}
-                    <Link url="https://shopify.dev/api/admin-graphql" external>
-                      Shopify Admin API
-                    </Link>
-                    , and{" "}
-                    <Link
-                      url="https://shopify.dev/apps/tools/app-bridge"
-                      external
-                    >
-                      App Bridge
-                    </Link>{" "}
-                    UI library and components.
-                  </p>
-                  <p>
-                    Ready to go? Start populating your app with some sample
-                    products to view and test in your store.{" "}
-                  </p>
-                  <p>
-                    Learn more about building out your app in{" "}
-                    <Link
-                      url="https://shopify.dev/apps/getting-started/add-functionality"
-                      external
-                    >
-                      this Shopify tutorial
-                    </Link>{" "}
-                    📚{" "}
-                  </p>
-                </TextContainer>
-              </Stack.Item>
-              <Stack.Item>
-                <div style={{ padding: "0 20px" }}>
-                  <Image
-                    source={trophyImage}
-                    alt="Nice work on building a Shopify app"
-                    width={120}
-                  />
-                </div>
-              </Stack.Item>
-            </Stack>
+          <Card title="Change Product Name" sectioned>
+            <Form onSubmit={handleSubmit}>
+              <FormLayout>
+                <TextField
+                  label="Type on the input the new name and select which product name to change"
+                  value={value}
+                  onChange={handleChange}
+                />
+                <Button primary submit>
+                  Select Product
+                </Button>
+              </FormLayout>
+              <ResourcePicker
+                resourceType="Product"
+                open={state}
+                onCancel={handleCancel}
+                onSelection={handleSelection}
+              />
+            </Form>
           </Card>
-        </Layout.Section>
-        <Layout.Section>
-          <ProductsCard />
         </Layout.Section>
       </Layout>
     </Page>
   );
-}
+};
+
+export default index;

@@ -12,6 +12,9 @@ import productCreator from "./helpers/product-creator.js";
 import redirectToAuth from "./helpers/redirect-to-auth.js";
 import { BillingInterval } from "./helpers/ensure-billing.js";
 import { AppInstallations } from "./app_installations.js";
+import {Product} from '@shopify/shopify-api/dist/rest-resources/2022-10/index.js';
+import cors from 'cors';
+
 
 const USE_ONLINE_TOKENS = false;
 
@@ -108,6 +111,15 @@ export async function createServer(
     })
   );
 
+  app.get('/admin/api/2022-10/products.json', async (request, response) => {
+    const test_session = await Shopify.Utils.loadCurrentSession(request, response);
+    const app = express();
+    app.use(cors());
+    await Product.all({
+      session: test_session,
+    });
+});
+
   app.get("/api/products/count", async (req, res) => {
     const session = await Shopify.Utils.loadCurrentSession(
       req,
@@ -199,7 +211,8 @@ export async function createServer(
       .status(200)
       .set("Content-Type", "text/html")
       .send(readFileSync(htmlFile));
-  });
+  }
+  );
 
   return { app };
 }
