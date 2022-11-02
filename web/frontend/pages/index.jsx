@@ -10,27 +10,14 @@ import {
   Stack,
 } from "@shopify/polaris";
 import { ResourcePicker } from "@shopify/app-bridge-react";
-import axios from "axios";
-
-const axiosGetData = () => {
-  axios({
-    url: '/admin/api/2022-10/products.json',
-    method: "GET",
-    headers: {
-      'X-Shopify-Access-Token': `${process.env.TOKEN}`,
-      'Content-Type': 'application/json'
-    },
-  })
-    .then((res) => {
-      console.log(res);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-};
-
+import { useAppQuery } from '../hooks/index';
+import { ProductsCard } from "../components";
 
 const index = () => {
+  const { data } = useAppQuery({
+    url: "/admin/api/2022-10/products"
+  });
+
   const [value, setValue] = useState("Name");
   const [state, setState] = useState(false);
 
@@ -40,7 +27,7 @@ const index = () => {
     setState(true);
     e.preventDefault();
     console.log(value);
-    axiosGetData();
+    console.log(data);
   }
 
   function handleCancel() {

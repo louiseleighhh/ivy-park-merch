@@ -29,6 +29,7 @@ export function ProductsCard() {
     },
   });
 
+
   const toastMarkup = toastProps.content && !isRefetchingCount && (
     <Toast {...toastProps} onDismiss={() => setToastProps(emptyToastProps)} />
   );
@@ -48,6 +49,7 @@ export function ProductsCard() {
       });
     }
   };
+
 
   return (
     <>

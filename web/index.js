@@ -12,9 +12,7 @@ import productCreator from "./helpers/product-creator.js";
 import redirectToAuth from "./helpers/redirect-to-auth.js";
 import { BillingInterval } from "./helpers/ensure-billing.js";
 import { AppInstallations } from "./app_installations.js";
-import {Product} from '@shopify/shopify-api/dist/rest-resources/2022-10/index.js';
-import cors from 'cors';
-
+import cors from "cors";
 
 const USE_ONLINE_TOKENS = false;
 
@@ -37,7 +35,9 @@ Shopify.Context.initialize({
   // This should be replaced with your preferred storage strategy
   // See note below regarding using CustomSessionStorage with this template.
   SESSION_STORAGE: new Shopify.Session.SQLiteSessionStorage(DB_PATH),
-  ...(process.env.SHOP_CUSTOM_DOMAIN && {CUSTOM_SHOP_DOMAINS: [process.env.SHOP_CUSTOM_DOMAIN]}),
+  ...(process.env.SHOP_CUSTOM_DOMAIN && {
+    CUSTOM_SHOP_DOMAINS: [process.env.SHOP_CUSTOM_DOMAIN],
+  }),
 });
 
 // NOTE: If you choose to implement your own storage strategy using
@@ -111,14 +111,27 @@ export async function createServer(
     })
   );
 
-  app.get('/admin/api/2022-10/products.json', async (request, response) => {
-    const test_session = await Shopify.Utils.loadCurrentSession(request, response);
-    const app = express();
-    app.use(cors());
-    await Product.all({
-      session: test_session,
+
+// import {Product} from '@shopify/shopify-api/dist/rest-resources/2022-01/index.js';
+// const test_session = await Shopify.Utils.loadCurrentSession(request, response);
+// await Product.all({
+//   	session: test_session,
+// });
+
+  app.get("/admin/api/2022-10/products", async (request, response) => {
+    const test_session = await Shopify.Utils.loadCurrentSession(
+      request,
+      response,
+      app.get("use-online-tokens")
+    );
+    const { Product } = await import(
+      `@shopify/shopify-api/dist/rest-resources/${Shopify.Context.API_VERSION}/index.js`
+    );
+    const products = await Product.all({
+      session: test_session
     });
-});
+    response.send(products)
+  });
 
   app.get("/api/products/count", async (req, res) => {
     const session = await Shopify.Utils.loadCurrentSession(
@@ -133,6 +146,15 @@ export async function createServer(
     const countData = await Product.count({ session });
     res.status(200).send(countData);
   });
+
+// import {Product} from '@shopify/shopify-api/dist/rest-resources/2022-01/index.js';
+
+// const test_session = await Shopify.Utils.loadCurrentSession(request, response);
+
+// await Product.count({
+//   session: test_session,
+// });
+
 
   app.get("/api/products/create", async (req, res) => {
     const session = await Shopify.Utils.loadCurrentSession(
@@ -211,8 +233,7 @@ export async function createServer(
       .status(200)
       .set("Content-Type", "text/html")
       .send(readFileSync(htmlFile));
-  }
-  );
+  });
 
   return { app };
 }
